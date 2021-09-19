@@ -1,7 +1,8 @@
 ﻿
-/* 
- * Script para rotacionar objeto de acordo com um arquivo que especifica os quaternions 
+/*
+ * Script para rotacionar objeto de acordo com um arquivo que especifica os quaternions
  * [period] é uma variável pública e pode ser modificada na interface do unity antes de executar a animação
+ * [path] é uma variável pública e pode ser modificada na interface do unity antes de executar a animação
  */
 
 using System.Collections;
@@ -11,8 +12,9 @@ using System.IO;
 using UnityEngine;
 
 public class QuaternionRotation : MonoBehaviour
-{  
+{
     public  int period = 10; //intervalo de tempo entre uma rotação e outra em milisegundos
+    public string path = "Assets/quaternions_volta.txt"; // O caminho para o arquivo contendo os quaternions
     private float periodS; //periodo em segundos
     private float totalTime = 0f; //tempo que passou
     private int totalQuaternions; //quantidade total de quaternions no array
@@ -20,18 +22,17 @@ public class QuaternionRotation : MonoBehaviour
     private ArrayList readings = new ArrayList(); //linhas do arquivo lido
     private ArrayList quaternions = new ArrayList();
     private int totalReadings = 0;
-    private string path = "Assets/quaternions_volta.txt";
 
     Quaternion createQuaternion(float w, float x, float y, float z)
     {
         //para ficar igual ao do matlab: z unity = x, y unity = z, x unity = -y
-        return new Quaternion(w, -y, z, x);      
+        return new Quaternion(w, -y, z, x);
     }
 
     void Start()
     {
-        
-        periodS = (float) period / 1000;     
+
+        periodS = (float) period / 1000;
         quaternionArrayIndex = 0;
 
         //lendo arquivo de quaternions
@@ -42,7 +43,7 @@ public class QuaternionRotation : MonoBehaviour
         for(int i = 0; i < totalReadings; i++)
         {
             for(int j = 0; j  < 4; j++)
-            {            
+            {
                 readings.Insert(i + j, float.Parse(reader.ReadLine()));
             }
             quaternions.Insert(i, createQuaternion((float) readings[i], (float)readings[i+1], (float)readings[i+2], (float)readings[i+3]));
