@@ -14,6 +14,8 @@ namespace BlackBoxFileReader
 
     private MpuSectionReader mpuSectionReader = new MpuSectionReader();
     public MpuSectionReader MpuSectionReader => mpuSectionReader;
+    private GpsSectionReader gpsSectionReader = new GpsSectionReader();
+    public GpsSectionReader GpsSectionReader => gpsSectionReader;
 
     private bool finishedReading = false;
     public bool FinishedReading => finishedReading;
@@ -30,6 +32,14 @@ namespace BlackBoxFileReader
         {
           case "#[m":
             mpuSectionReader.ReadSection(reader);
+            break;
+          case "#[g":
+            gpsSectionReader.ReadSection(reader);
+            break;
+          case "m]#":
+          case "g]#":
+          case "l]#":
+          case "f]#":
             break;
           default:
             SectionDiscarder();

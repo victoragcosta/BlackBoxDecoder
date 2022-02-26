@@ -57,4 +57,52 @@ public class TestDataExtractor
 
     }
   }
+
+  [Test]
+  public void ReadsGpsCorrectly()
+  {
+    var streamReader = new StreamReader("Assets/Tests/Amostra1Expected/amostra1.txt");
+    var dataReader = new Reader(streamReader);
+
+    Assert.IsTrue(dataReader.FinishedReading, "dataReader.FinishedReading");
+
+    // Test if metadata was captured correctly
+
+    foreach (var item in dataReader.GpsSectionReader.MetadataTypes.Keys)
+    {
+      var data = dataReader.GpsSectionReader.GetMetadata(item);
+      var expectedData = Gps.Metadata[item];
+      Assert.IsInstanceOf(
+        expectedData.GetType(),
+        data,
+        $"Type of metadata item {item} is wrong."
+      );
+      Assert.AreEqual(expectedData, data, $"Metadata item {item} was read wrong.");
+    }
+
+    Assert.AreEqual(Gps.Metadata["n_samples"], dataReader.GpsSectionReader.ValuesCount);
+    Assert.AreEqual(dataReader.GpsSectionReader.GetMetadata("n_samples"), dataReader.GpsSectionReader.ValuesCount);
+
+    for (int i = 0; i < Gps.Data.Count; i++)
+    {
+      var data = dataReader.GpsSectionReader.GetValue(i);
+      var expectedData = Gps.Data[i];
+
+      int j = 0;
+      foreach (var keyValue in data)
+      {
+        var key = keyValue.Key;
+        var value = keyValue.Value;
+
+        Assert.IsInstanceOf(
+          expectedData[j].GetType(),
+          value,
+          $"Type of value item {key} is wrong."
+        );
+        Assert.AreEqual(expectedData[j], value, $"Value item {key} was read wrong.");
+        j++;
+      }
+
+    }
+  }
 }
