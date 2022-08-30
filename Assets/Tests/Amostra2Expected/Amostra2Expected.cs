@@ -1,0 +1,1 @@
+namespace Amostra2Expected {}
