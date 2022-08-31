@@ -12,6 +12,7 @@ enum ExpectedDataType
 {
   MPU,
   GPS,
+  L,
 }
 
 public class TestDataReader
@@ -19,19 +20,33 @@ public class TestDataReader
   static IEnumerable<IEnumerable<object>> TestReaders(ExpectedDataType type) {
     var streamReader1 = new StreamReader("Assets/Tests/Amostra1Expected/amostra1.txt");
     var dataReader1 = new Reader(streamReader1);
-    if (type == ExpectedDataType.MPU) {
-      yield return new object[] { dataReader1, new Amostra1Expected.Mpu() };
-    } else {
-      yield return new object[] { dataReader1, new Amostra1Expected.Gps() };
+    switch (type)
+    {
+      case ExpectedDataType.MPU:
+        yield return new object[] { dataReader1, new Amostra1Expected.Mpu() };
+        break;
+      case ExpectedDataType.GPS:
+        yield return new object[] { dataReader1, new Amostra1Expected.Gps() };
+        break;
+      case ExpectedDataType.L:
+        yield return new object[] { dataReader1, new Amostra1Expected.L() };
+        break;
     }
     streamReader1.Close();
 
     var streamReader2 = new StreamReader("Assets/Tests/Amostra2Expected/amostra2.txt");
     var dataReader2 = new Reader(streamReader2);
-    if (type == ExpectedDataType.MPU) {
-      yield return new object[] { dataReader2, new Amostra2Expected.Mpu() };
-    } else {
-      yield return new object[] { dataReader2, new Amostra2Expected.Gps() };
+    switch (type)
+    {
+      case ExpectedDataType.MPU:
+        yield return new object[] { dataReader2, new Amostra2Expected.Mpu() };
+        break;
+      case ExpectedDataType.GPS:
+        yield return new object[] { dataReader2, new Amostra2Expected.Gps() };
+        break;
+      case ExpectedDataType.L:
+        yield return new object[] { dataReader2, new Amostra2Expected.L() };
+        break;
     }
     streamReader2.Close();
   }
@@ -123,6 +138,26 @@ public class TestDataReader
         j++;
       }
 
+    }
+  }
+
+  [TestCaseSource(typeof(TestDataReader), nameof(TestReaders), new object[] { ExpectedDataType.L })]
+  public void ReadsLCorrectly(Reader dataReader, ExpectedData expected)
+  {
+    Assert.IsTrue(dataReader.FinishedReading, "dataReader.FinishedReading");
+
+    // Test if metadata was captured correctly
+
+    foreach (var item in dataReader.LSectionReader.MetadataTypes.Keys)
+    {
+      var data = dataReader.LSectionReader.GetMetadata(item);
+      var expectedData = expected.Metadata[item];
+      Assert.IsInstanceOf(
+        expectedData.GetType(),
+        data,
+        $"Type of metadata item {item} is wrong."
+      );
+      Assert.AreEqual(expectedData, data, $"Metadata item {item} was read wrong.");
     }
   }
 
