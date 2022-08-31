@@ -30,6 +30,15 @@ namespace BlackBoxFileReader
 
     private dynamic TypeCast(String value, String type)
     {
+      if (value == "") {
+        switch(type) {
+          case "Int":
+            return -1;
+          case "Double":
+            return -1.0;
+        }
+      }
+
       switch (type)
       {
         case "Int":
@@ -51,7 +60,7 @@ namespace BlackBoxFileReader
       // Read metadata
       foreach (var item in MetadataOrder)
       {
-        var line = ReadNotEmptyLine(reader);
+        var line = reader.ReadLine();
 
         if (linePattern.IsMatch(item))
         {
@@ -78,7 +87,7 @@ namespace BlackBoxFileReader
       // Read sequential values section
       for (int i = 0; i < ValuesCount; i++)
       {
-        var line = ReadNotEmptyLine(reader);
+        var line = reader.ReadLine();
         var parameters = line.Split(" ".ToCharArray());
         var converted = new Dictionary<String, dynamic>();
         for (int j = 0; j < ValueParameters.Count; j++)

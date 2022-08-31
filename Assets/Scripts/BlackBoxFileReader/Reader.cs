@@ -24,7 +24,7 @@ namespace BlackBoxFileReader
     {
       this.reader = reader;
 
-      String line = ReadNotEmptyLine(reader);
+      String line = reader.ReadLine();
 
       while (line != null)
       {
@@ -45,7 +45,7 @@ namespace BlackBoxFileReader
             SectionDiscarder();
             break;
         }
-        line = ReadNotEmptyLine(reader);
+        line = reader.ReadLine();
       }
 
       finishedReading = true;
