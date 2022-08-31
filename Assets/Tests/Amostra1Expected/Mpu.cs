@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Utils;
 
 namespace Amostra1Expected
 {
-  public class Mpu {
-    public static Dictionary<String, dynamic> Metadata  = new Dictionary<String, dynamic>()
+  public class Mpu : ExpectedData {
+    private static Dictionary<String, dynamic> _metadata = new Dictionary<String, dynamic>()
     {
       {"collision_date", "041020"},
       {"collision_time", "145330"},
@@ -54,7 +55,7 @@ namespace Amostra1Expected
       {"n_samples", 2772},
     };
 
-    public static List<List<dynamic>> Data = new List<List<dynamic>>{
+    private static List<List<dynamic>> _data = new List<List<dynamic>>{
       new List<dynamic>{00000, "00000000", -00472, +00616, +16908, -00069, +00064, -00082, -00037, +00049, -00007},
 
       new List<dynamic>{00001, "00000012", -00528, +00656, +16980, -00077, +00060, -00084, -00032, +00044, -00009},
@@ -5600,5 +5601,8 @@ namespace Amostra1Expected
       new List<dynamic>{02771, "0000C2D6", -00544, +00560, +16928, -00174, +00043, -00066, -00041, +00049, +00001},
 
     };
+
+    public override Dictionary<String, dynamic> Metadata => _metadata;
+    public override List<List<dynamic>> Data => _data;
   }
 }

@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
+using Utils;
 
 namespace Amostra1Expected
 {
-  public class Gps {
-    public static Dictionary<String, dynamic> Metadata = new Dictionary<String, dynamic>()
+  public class Gps : ExpectedData {
+    private static Dictionary<String, dynamic> _metadata = new Dictionary<String, dynamic>()
     {
       {"sel_date", "041020"},
       {"sel_time", "145330"},
       {"gps_start_addr", "233088"},
       {"n_samples", 28}
     };
-    public static List<List<dynamic>> Data = new List<List<dynamic>>
+    private static List<List<dynamic>> _data = new List<List<dynamic>>
     {
       new List<dynamic>{ 0000000000, "+0000229504", "V", "145303", "041020", "0000.000000", "N", "00000.00000", "E", 0.000, "K", 0.000, 0.00, 0.00, "M", 00, 99.99, 99.99, 99.99, "1368" },
       new List<dynamic>{ 0000000001, "+0000229632", "V", "145304", "041020", "0000.000000", "N", "00000.00000", "E", 0.000, "K", 0.000, 0.00, 0.00, "M", 00, 99.99, 99.99, 99.99, "3006" },
@@ -42,5 +43,8 @@ namespace Amostra1Expected
       new List<dynamic>{ 0000000026, "+0000232832", "V", "145329", "041020", "0000.000000", "N", "00000.00000", "E", 0.000, "K", 0.000, 0.00, 0.00, "M", 00, 99.99, 99.99, 99.99, "47952" },
       new List<dynamic>{ 0000000027, "+0000232960", "V", "145330", "041020", "0000.000000", "N", "00000.00000", "E", 0.000, "K", 0.000, 0.00, 0.00, "M", 00, 99.99, 99.99, 99.99, "49734" },
     };
+
+    public override Dictionary<string, dynamic> Metadata => _metadata;
+    public override List<List<dynamic>> Data => _data;
   }
 }

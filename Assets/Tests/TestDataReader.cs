@@ -6,15 +6,39 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using BlackBoxFileReader;
+using Utils;
 
-public class TestDataExtractor
+enum ExpectedDataType
 {
-  [Test]
-  public void ReadsMpuCorrectly()
-  {
-    var streamReader = new StreamReader("Assets/Tests/Amostra1Expected/amostra1.txt");
-    var dataReader = new Reader(streamReader);
+  MPU,
+  GPS,
+}
 
+public class TestDataReader
+{
+  static IEnumerable<IEnumerable<object>> TestReaders(ExpectedDataType type) {
+    var streamReader1 = new StreamReader("Assets/Tests/Amostra1Expected/amostra1.txt");
+    var dataReader1 = new Reader(streamReader1);
+    if (type == ExpectedDataType.MPU) {
+      yield return new object[] { dataReader1, new Amostra1Expected.Mpu() };
+    } else {
+      yield return new object[] { dataReader1, new Amostra1Expected.Gps() };
+    }
+    streamReader1.Close();
+
+    var streamReader2 = new StreamReader("Assets/Tests/Amostra2Expected/amostra2.txt");
+    var dataReader2 = new Reader(streamReader2);
+    if (type == ExpectedDataType.MPU) {
+      yield return new object[] { dataReader2, new Amostra2Expected.Mpu() };
+    } else {
+      yield return new object[] { dataReader2, new Amostra2Expected.Gps() };
+    }
+    streamReader2.Close();
+  }
+
+  [TestCaseSource(typeof(TestDataReader), nameof(TestReaders), new object[] { ExpectedDataType.MPU })]
+  public void ReadsMpuCorrectly(Reader dataReader, ExpectedData expected)
+  {
     Assert.IsTrue(dataReader.FinishedReading, "dataReader.FinishedReading");
 
     // Test if metadata was captured correctly
@@ -22,7 +46,7 @@ public class TestDataExtractor
     foreach (var item in dataReader.MpuSectionReader.MetadataTypes.Keys)
     {
       var data = dataReader.MpuSectionReader.GetMetadata(item);
-      var expectedData = Amostra1Expected.Mpu.Metadata[item];
+      var expectedData = expected.Metadata[item];
       Assert.IsInstanceOf(
         expectedData.GetType(),
         data,
@@ -31,13 +55,13 @@ public class TestDataExtractor
       Assert.AreEqual(expectedData, data, $"Metadata item {item} was read wrong.");
     }
 
-    Assert.AreEqual(Amostra1Expected.Mpu.Metadata["n_samples"], dataReader.MpuSectionReader.ValuesCount);
+    Assert.AreEqual(expected.Metadata["n_samples"], dataReader.MpuSectionReader.ValuesCount);
     Assert.AreEqual(dataReader.MpuSectionReader.GetMetadata("n_samples"), dataReader.MpuSectionReader.ValuesCount);
 
-    for (int i = 0; i < Amostra1Expected.Mpu.Data.Count; i++)
+    for (int i = 0; i < expected.Data.Count; i++)
     {
       var data = dataReader.MpuSectionReader.GetValue(i);
-      var expectedData = Amostra1Expected.Mpu.Data[i];
+      var expectedData = expected.Data[i];
 
       int j = 0;
       foreach (var keyValue in data)
@@ -57,12 +81,9 @@ public class TestDataExtractor
     }
   }
 
-  [Test]
-  public void ReadsGpsCorrectly()
+  [TestCaseSource(typeof(TestDataReader), nameof(TestReaders), new object[] { ExpectedDataType.GPS })]
+  public void ReadsGpsCorrectly(Reader dataReader, ExpectedData expected)
   {
-    var streamReader = new StreamReader("Assets/Tests/Amostra1Expected/amostra1.txt");
-    var dataReader = new Reader(streamReader);
-
     Assert.IsTrue(dataReader.FinishedReading, "dataReader.FinishedReading");
 
     // Test if metadata was captured correctly
@@ -70,7 +91,7 @@ public class TestDataExtractor
     foreach (var item in dataReader.GpsSectionReader.MetadataTypes.Keys)
     {
       var data = dataReader.GpsSectionReader.GetMetadata(item);
-      var expectedData = Amostra1Expected.Gps.Metadata[item];
+      var expectedData = expected.Metadata[item];
       Assert.IsInstanceOf(
         expectedData.GetType(),
         data,
@@ -79,13 +100,13 @@ public class TestDataExtractor
       Assert.AreEqual(expectedData, data, $"Metadata item {item} was read wrong.");
     }
 
-    Assert.AreEqual(Amostra1Expected.Gps.Metadata["n_samples"], dataReader.GpsSectionReader.ValuesCount);
+    Assert.AreEqual(expected.Metadata["n_samples"], dataReader.GpsSectionReader.ValuesCount);
     Assert.AreEqual(dataReader.GpsSectionReader.GetMetadata("n_samples"), dataReader.GpsSectionReader.ValuesCount);
 
-    for (int i = 0; i < Amostra1Expected.Gps.Data.Count; i++)
+    for (int i = 0; i < expected.Data.Count; i++)
     {
       var data = dataReader.GpsSectionReader.GetValue(i);
-      var expectedData = Amostra1Expected.Gps.Data[i];
+      var expectedData = expected.Data[i];
 
       int j = 0;
       foreach (var keyValue in data)
@@ -105,99 +126,4 @@ public class TestDataExtractor
     }
   }
 
-  [Test]
-  public void ReadsMpuCorrectlyFromAmostra2()
-  {
-    var streamReader = new StreamReader("Assets/Tests/Amostra2Expected/amostra2.txt");
-    var dataReader = new Reader(streamReader);
-
-    Assert.IsTrue(dataReader.FinishedReading, "dataReader.FinishedReading");
-
-    // Test if metadata was captured correctly
-
-    foreach (var item in dataReader.MpuSectionReader.MetadataTypes.Keys)
-    {
-      var data = dataReader.MpuSectionReader.GetMetadata(item);
-      var expectedData = Amostra2Expected.Mpu.Metadata[item];
-      Assert.IsInstanceOf(
-        expectedData.GetType(),
-        data,
-        $"Type of metadata item {item} is wrong."
-      );
-      Assert.AreEqual(expectedData, data, $"Metadata item {item} was read wrong.");
-    }
-
-    Assert.AreEqual(Amostra2Expected.Mpu.Metadata["n_samples"], dataReader.MpuSectionReader.ValuesCount);
-    Assert.AreEqual(dataReader.MpuSectionReader.GetMetadata("n_samples"), dataReader.MpuSectionReader.ValuesCount);
-
-    for (int i = 0; i < Amostra2Expected.Mpu.Data.Count; i++)
-    {
-      var data = dataReader.MpuSectionReader.GetValue(i);
-      var expectedData = Amostra2Expected.Mpu.Data[i];
-
-      int j = 0;
-      foreach (var keyValue in data)
-      {
-        var key = keyValue.Key;
-        var value = keyValue.Value;
-
-        Assert.IsInstanceOf(
-          expectedData[j].GetType(),
-          value,
-          $"Type of value item {key} is wrong."
-        );
-        Assert.AreEqual(expectedData[j], value, $"Value item {key} was read wrong.");
-        j++;
-      }
-
-    }
-  }
-
-  [Test]
-  public void ReadsGpsCorrectlyFromAmostra2()
-  {
-    var streamReader = new StreamReader("Assets/Tests/Amostra2Expected/amostra2.txt");
-    var dataReader = new Reader(streamReader);
-
-    Assert.IsTrue(dataReader.FinishedReading, "dataReader.FinishedReading");
-
-    // Test if metadata was captured correctly
-
-    foreach (var item in dataReader.GpsSectionReader.MetadataTypes.Keys)
-    {
-      var data = dataReader.GpsSectionReader.GetMetadata(item);
-      var expectedData = Amostra2Expected.Gps.Metadata[item];
-      Assert.IsInstanceOf(
-        expectedData.GetType(),
-        data,
-        $"Type of metadata item {item} is wrong."
-      );
-      Assert.AreEqual(expectedData, data, $"Metadata item {item} was read wrong.");
-    }
-
-    Assert.AreEqual(Amostra2Expected.Gps.Metadata["n_samples"], dataReader.GpsSectionReader.ValuesCount);
-    Assert.AreEqual(dataReader.GpsSectionReader.GetMetadata("n_samples"), dataReader.GpsSectionReader.ValuesCount);
-
-    for (int i = 0; i < Amostra2Expected.Gps.Data.Count; i++)
-    {
-      var data = dataReader.GpsSectionReader.GetValue(i);
-      var expectedData = Amostra2Expected.Gps.Data[i];
-
-      int j = 0;
-      foreach (var keyValue in data)
-      {
-        var key = keyValue.Key;
-        var value = keyValue.Value;
-
-        Assert.IsInstanceOf(
-          expectedData[j].GetType(),
-          value,
-          $"Type of value item {key} is wrong."
-        );
-        Assert.AreEqual(expectedData[j], value, $"Value item {key} was read wrong.");
-        j++;
-      }
-
-    }
-  }
 }
