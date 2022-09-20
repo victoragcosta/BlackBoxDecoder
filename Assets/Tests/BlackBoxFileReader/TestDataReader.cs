@@ -18,7 +18,7 @@ enum ExpectedDataType
 public class TestDataReader
 {
   static IEnumerable<IEnumerable<object>> TestReaders(ExpectedDataType type) {
-    var streamReader1 = new StreamReader("Assets/Tests/Amostra1Expected/amostra1.txt");
+    var streamReader1 = new StreamReader("Assets/Tests/BlackBoxFileReader/Amostra1Expected/amostra1.txt");
     var dataReader1 = new Reader(streamReader1);
     switch (type)
     {
@@ -34,7 +34,7 @@ public class TestDataReader
     }
     streamReader1.Close();
 
-    var streamReader2 = new StreamReader("Assets/Tests/Amostra2Expected/amostra2.txt");
+    var streamReader2 = new StreamReader("Assets/Tests/BlackBoxFileReader/Amostra2Expected/amostra2.txt");
     var dataReader2 = new Reader(streamReader2);
     switch (type)
     {
