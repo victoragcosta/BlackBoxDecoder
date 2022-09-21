@@ -8,7 +8,15 @@ namespace SignalProcessors
   using QuaternionTiltData = List<Quaternion>;
   using PositionData = List<DataTypes.Vector3>;
 
-  using PositionData = List<Vector3>;
+  readonly struct SignalProcessorEulerReturn {
+    public PositionData positionData { get; }
+    public EulerTiltData tiltData { get; }
+  }
+
+  readonly struct SignalProcessorQuaternionReturn {
+    public PositionData positionData { get; }
+    public QuaternionTiltData tiltData { get; }
+  }
 
   abstract class SignalProcessor<Param>
   {
@@ -17,14 +25,14 @@ namespace SignalProcessors
       this.parameters = parameters;
     }
 
-    public abstract Tuple<PositionData, EulerTiltData> ProcessEuler(
+    public abstract SignalProcessorEulerReturn ProcessEuler(
       AccelerometerData accelerometerData,
       GyroscopeData gyroscopeData,
       MagnetometerData magnetometerData,
       GpsData gpsData
     );
 
-    public abstract Tuple<PositionData, QuaternionTiltData> ProcessQuaternion(
+    public abstract SignalProcessorQuaternionReturn ProcessQuaternion(
       AccelerometerData accelerometerData,
       GyroscopeData gyroscopeData,
       MagnetometerData magnetometerData,
