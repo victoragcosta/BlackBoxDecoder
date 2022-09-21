@@ -1,13 +1,24 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace DataTypes {
-  public class AccelerometerData : List<Vector3> {}
-  public class GyroscopeData : List<Vector3> {}
-  public class MagnetometerData : List<Vector3> {}
+  readonly struct Vector3 {
+    public Vector3(Double x, Double y, Double z) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+    }
 
-  public class GpsData {
+    public Double x { get; }
+    public Double y { get; }
+    public Double z { get; }
+  }
+
+  class AccelerometerData : List<Vector3> {}
+  class GyroscopeData : List<Vector3> {}
+  class MagnetometerData : List<Vector3> {}
+
+  class GpsData {
     public Boolean valid { get; }
 
     // {"date_reading", "String"},

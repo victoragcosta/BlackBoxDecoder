@@ -1,12 +1,13 @@
-using System;
 using System.Collections.Generic;
-using DataTypes;
 using UnityEngine;
+using DataTypes;
 
 namespace SignalProcessors
 {
-  using EulerTiltData = List<Vector3>;
+  using EulerTiltData = List<DataTypes.Vector3>;
   using QuaternionTiltData = List<Quaternion>;
+  using PositionData = List<DataTypes.Vector3>;
+
   using PositionData = List<Vector3>;
 
   abstract class SignalProcessor<Param>
