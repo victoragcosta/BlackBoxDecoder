@@ -8,14 +8,30 @@ namespace SignalProcessors
   using QuaternionTiltData = List<Quaternion>;
   using PositionData = List<DataTypes.Vector3>;
 
-  readonly struct SignalProcessorEulerReturn {
+  class SignalProcessorReturn<Tilt> {
     public PositionData positionData { get; }
-    public EulerTiltData tiltData { get; }
+    public Tilt tiltData { get; }
+    public SignalProcessorReturn(
+      PositionData positionData,
+      Tilt tiltData
+    ) {
+      this.positionData = positionData;
+      this.tiltData = tiltData;
+    }
   }
 
-  readonly struct SignalProcessorQuaternionReturn {
-    public PositionData positionData { get; }
-    public QuaternionTiltData tiltData { get; }
+  class SignalProcessorEulerReturn : SignalProcessorReturn<EulerTiltData> {
+    public SignalProcessorEulerReturn(
+      PositionData positionData,
+      EulerTiltData tiltData
+    ) : base(positionData, tiltData) {}
+  }
+
+  class SignalProcessorQuaternionReturn : SignalProcessorReturn<QuaternionTiltData> {
+    public SignalProcessorQuaternionReturn(
+      PositionData positionData,
+      QuaternionTiltData tiltData
+    ) : base(positionData, tiltData) {}
   }
 
   abstract class SignalProcessor<Param>
