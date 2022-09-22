@@ -24,7 +24,7 @@ namespace SignalProcessors
 
   abstract class SignalPreProcessor<Param>
   {
-    private Param parameters { get; set; }
+    protected Param parameters { get; set; }
     public SignalPreProcessor(Param parameters) {
       this.parameters = parameters;
     }
