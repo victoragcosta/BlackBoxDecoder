@@ -3,46 +3,13 @@ using System;
 using System.Linq;
 
 using DataTypes;
-// function ret = calculate_aceleration(A, a_bias, esc_ac)
-//     %% Converter aceleração em "g"
-//     ax = esc_ac * (A(1) / 32767) - a_bias(1);
-//     ay = esc_ac * (A(2) / 32767) - a_bias(2);
-//     az = esc_ac * (A(3) / 32767) - a_bias(3);
-
-//     ret = [ax, ay, az];
-// end
-
-// function ret = calculate_gyro(G, g_bias, esc_giro)
-//     %% Converter giros em "graus/seg"
-//     gx = esc_giro * (G(1) / 32767) - g_bias(1);
-//     gy = esc_giro * (G(2) / 32767) - g_bias(2);
-//     gz = esc_giro * (G(3) / 32767) - g_bias(3);
-
-//     ret = [gx, gy, gz];
-// end
-
-
-// function ret = calculate_mag(H, h_offsets, h_scales)
-//     %% Remove hard and soft iron dos dados do magnetometro
-//     hx = (H(1) - h_offsets(1)) * h_scales(1);
-//     hy = (H(2) - h_offsets(2)) * h_scales(2);
-//     hz = (H(3) - h_offsets(3)) * h_scales(3);
-
-//     %% Converter leitura do magnetometro em micro Testla p/ mili Gaus
-//     % Trocando a ordem, porque os eixos do mag são X p/ Y do giro, Y p/ X
-//     % do giro e -Z p/ Z do giro
-//     temp_x = hy;
-//     temp_y = hx;
-//     temp_z = -hz;
-//     hx = (4912 * temp_x/32767) * 10;
-//     hy = (4912 * temp_y/32767) * 10;
-//     hz = (4912 * temp_z/32767) * 10;
-
-//     ret = [hx, hy, hz];
-// end
 
 namespace SignalProcessors
 {
+  /// <summary>
+  ///   <c cref="ScaleBiasImuParams">ScaleBiasImuParams</c> is a data class with
+  ///   all the needed parameters to adjust all IMU data.
+  /// </summary>
   class ScaleBiasImuParams
   {
     public Vector3 accelerationBias { get; }
@@ -69,6 +36,16 @@ namespace SignalProcessors
     }
   };
 
+  /// <summary>
+  ///   <c cref="ScaleBiasAcceleration">ScaleBiasAcceleration</c> is a preprocessor
+  ///   that transforms IMU data into the correct units for calculations and removes
+  ///   bias from calibration.
+  ///
+  ///   <para>
+  ///     Acceleration is outputted in g's, gyroscope data is outputted in
+  ///     degrees per second and magnetometer data is outputted in milligauss.
+  ///   </para>
+  /// </summary>
   class ScaleBiasAcceleration : SignalPreProcessor<ScaleBiasImuParams>
   {
     public ScaleBiasAcceleration(ScaleBiasImuParams parameters) : base(parameters) {}
@@ -87,6 +64,51 @@ namespace SignalProcessors
       return this.scaleData(data, new Vector3(scale, scale, scale));
     }
 
+    private List<Vector3> scaleMagnetometerData(List<Vector3> unbiasedData, Vector3 scale)
+    {
+      return unbiasedData.Select(vec => new Vector3(
+        vec.x * scale.x,
+        vec.y * scale.y,
+        vec.z * scale.z
+      )).ToList();
+    }
+
+
+
+    /// <summary>
+    ///   Subtracts a number from each direction. These numbers are captured from
+    ///   calibration data, available in the BlackBoxFile metadata.
+    /// </summary>
+    /// <param name="data">
+    ///   The scaled data for accelerometer and gyroscope and the raw data for
+    ///   magnetometer.
+    /// </param>
+    /// <param name="bias">The vector with the bias for each direction.</param>
+    /// <returns></returns>
+    private List<Vector3> removeBiasFromData(List<Vector3> data, Vector3 bias)
+    {
+      return data.Select(vec => new Vector3(
+        vec.x - bias.x,
+        vec.y - bias.y,
+        vec.z - bias.z
+      )).ToList();
+    }
+
+    private List<Vector3> convertFromMicroTeslaToMilliGauss(List<Vector3> data)
+    {
+      List<Vector3> switchedAxis = data.Select(vec => new Vector3(
+        vec.y,
+        vec.x,
+        -vec.z
+      )).ToList();
+
+      return data.Select(vec => new Vector3(
+        (4912 * vec.x/32767) * 10,
+        (4912 * vec.y/32767) * 10,
+        (4912 * vec.z/32767) * 10
+      )).ToList();
+    }
+
     public override SignalPreProcessorReturn PreProcess(
       AccelerometerData accelerometerData,
       GyroscopeData gyroscopeData,
@@ -94,7 +116,30 @@ namespace SignalProcessors
       GpsData gpsData
     )
     {
-      throw new NotImplementedException();
+      // NOTE: `this.parameters` is inherited from `SignalPreProcessor`
+
+      var scaledAcc = this.scaleData(accelerometerData, this.parameters.accelerationScale);
+      var unbiasedAcc = (AccelerometerData)this.removeBiasFromData(
+        scaledAcc,
+        this.parameters.accelerationBias
+      );
+
+      var scaledGyro = this.scaleData(gyroscopeData, this.parameters.gyroscopeScale);
+      var unbiasedGyro = (GyroscopeData)this.removeBiasFromData(
+        scaledGyro,
+        this.parameters.gyroscopeBias
+      );
+
+      var unbiasedMag = this.removeBiasFromData(magnetometerData, this.parameters.magnetometerBias);
+      var scaledMag = this.scaleMagnetometerData(unbiasedMag, this.parameters.magnetometerScale);
+      var convertedMag = (MagnetometerData)this.convertFromMicroTeslaToMilliGauss(scaledMag);
+
+      return new SignalPreProcessorReturn(
+        unbiasedAcc,
+        unbiasedGyro,
+        convertedMag,
+        gpsData
+      );
     }
   }
 }
