@@ -37,7 +37,7 @@ namespace SignalProcessors
   };
 
   /// <summary>
-  ///   <c cref="ScaleBiasAcceleration">ScaleBiasAcceleration</c> is a preprocessor
+  ///   <c cref="ScaleBiasImu">ScaleBiasImu</c> is a preprocessor
   ///   that transforms IMU data into the correct units for calculations and removes
   ///   bias from calibration.
   ///
@@ -46,9 +46,9 @@ namespace SignalProcessors
   ///     degrees per second and magnetometer data is outputted in milligauss.
   ///   </para>
   /// </summary>
-  class ScaleBiasAcceleration : SignalPreProcessor<ScaleBiasImuParams>
+  class ScaleBiasImu : SignalPreProcessor<ScaleBiasImuParams>
   {
-    public ScaleBiasAcceleration(ScaleBiasImuParams parameters) : base(parameters) {}
+    public ScaleBiasImu(ScaleBiasImuParams parameters) : base(parameters) {}
 
     private List<Vector3> scaleData(List<Vector3> data, Vector3 scale)
     {
