@@ -109,36 +109,31 @@ namespace SignalProcessors
       )).ToList();
     }
 
-    public override SignalPreProcessorReturn PreProcess(
-      AccelerometerData accelerometerData,
-      GyroscopeData gyroscopeData,
-      MagnetometerData magnetometerData,
-      GpsData gpsData
-    )
+    public override RawData PreProcess(RawData rawData)
     {
       // NOTE: `this.parameters` is inherited from `SignalPreProcessor`
 
-      var scaledAcc = this.scaleData(accelerometerData, this.parameters.accelerationScale);
+      var scaledAcc = this.scaleData(rawData.accelerometerData, this.parameters.accelerationScale);
       var unbiasedAcc = (AccelerometerData)this.removeBiasFromData(
         scaledAcc,
         this.parameters.accelerationBias
       );
 
-      var scaledGyro = this.scaleData(gyroscopeData, this.parameters.gyroscopeScale);
+      var scaledGyro = this.scaleData(rawData.gyroscopeData, this.parameters.gyroscopeScale);
       var unbiasedGyro = (GyroscopeData)this.removeBiasFromData(
         scaledGyro,
         this.parameters.gyroscopeBias
       );
 
-      var unbiasedMag = this.removeBiasFromData(magnetometerData, this.parameters.magnetometerBias);
+      var unbiasedMag = this.removeBiasFromData(rawData.magnetometerData, this.parameters.magnetometerBias);
       var scaledMag = this.scaleMagnetometerData(unbiasedMag, this.parameters.magnetometerScale);
       var convertedMag = (MagnetometerData)this.convertFromMicroTeslaToMilliGauss(scaledMag);
 
-      return new SignalPreProcessorReturn(
+      return new RawData(
         unbiasedAcc,
         unbiasedGyro,
         convertedMag,
-        gpsData
+        rawData.gpsData
       );
     }
   }
